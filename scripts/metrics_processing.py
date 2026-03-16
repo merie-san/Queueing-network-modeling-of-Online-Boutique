@@ -24,7 +24,7 @@ if __name__ == "__main__":
         "productcatalogservice",
     ]
     service_metrics = {service: [] for service in services}
-    with open("../data/metrics_valid_format.json", "r") as f:
+    with open("../data/f_metrics.json", "r") as f:
         json_metrics = json.load(f)
         for json_metric in json_metrics:
             for resourceMetric in json_metric["resourceMetrics"]:
@@ -116,4 +116,4 @@ if __name__ == "__main__":
                                             print(f"Encountered a keyError: {datapoint}")
                                             sys.exit()
 
-        json.dump(service_metrics, open("../data/processed_metrics.json", "w"), indent=4)
+        json.dump(service_metrics, open("../data/f_processed_metrics.json", "w"), indent=4)

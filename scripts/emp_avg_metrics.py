@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import math
 
@@ -200,7 +201,7 @@ class ActiveRequestsCumulator:
 
 
 if __name__ == "__main__":
-    raw_metrics = json.load(open("../data/processed_metrics.json", "r"))
+    raw_metrics = json.load(open("../data/f_processed_metrics.json", "r"))
     # computing average throughput, average response time and average number of users for each endpoint in each microservice.
     services = [
         "frontend",
@@ -251,7 +252,7 @@ if __name__ == "__main__":
                     cumulator=endpoint_cumulator[function_name][metric_type]
                     cumulator.update(service_metric)
                     interval=cumulator.get_interval_length()
-                    if interval>30:
+                    if interval>59:
                         metrics_dict[service][function_name][metric_type].append((cumulator.get_metric(),  interval))
                         cumulator.reset()
 
@@ -263,11 +264,12 @@ if __name__ == "__main__":
                 print(f"average {metric_name} in subsequent intevals:")
                 i=0
                 for tuple_v in metric_list:
-                    print(f"interval {i} of {tuple_v[1]} s - average metric {tuple_v[0]}")
+                    print(f"interval {i} of {tuple_v[1]} seconds - average {tuple_v[0]} in seconds")
+                    i+=1
 
                 
     
-    json.dump(metrics_dict,open("../data/average_metrics.json","w"), indent=4)
+    json.dump(metrics_dict,open(f"../data/f_average_metrics{datetime.now().isoformat()}.json","w"), indent=4)
         
 
 
