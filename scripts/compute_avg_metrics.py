@@ -506,8 +506,8 @@ if __name__ == "__main__":
                     raise Exception(f"No cumulator present for service: {service} - metric: {metric}")
                 value = cumulator.get_metric()
                 interval = cumulator.get_interval()
-                metric_dict[f"average {service}_{metric} second"] = value
-                print(f"{service}-{metric} : {value} - {interval} s")
+                metric_dict[f"average_{service}_{metric}_second"] = value
+                print(f"{service} {metric} mean: {value} - {interval} s")
 
         json.dump(
             metric_dict, open(f"{WK_DIR}/overall_avg_metrics_{datetime.now().isoformat()}.json", "w"), indent=4
