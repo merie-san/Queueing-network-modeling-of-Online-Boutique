@@ -1,10 +1,40 @@
 import json
 from datetime import datetime
 
+frontend_endpoints=["GET /", "GET /product/{id}", "POST /cart/empty", "POST /setCurrency", "POST /cart/checkout", "GET /cart", "POST /cart", "GET /logout"]
+other_endpoints=["GetAds", "ListRecommendations", "GetCart", "AddItem", "EmptyCart", "PlaceOrder", "Charge", "GetQuote", "ShipOrder", "SendOrderConfirmation", "GetSupportedCurrencies", "Convert", "ListProducts", "GetProduct"]
+services = [
+        "frontend",
+        "adservice",
+        "recommendationservice",
+        "cartservice",
+        "checkoutservice",
+        "paymentservice",
+        "shippingservice",
+        "emailservice",
+        "currencyservice",
+        "productcatalogservice",
+    ]
+
+def map_to_backend_endpoints(string)->str|None:
+    for other_endpoint in other_endpoints:
+        if other_endpoint.lower() in string.lower():
+            return other_endpoint
+    return None
+
+def map_to_frontend_endpoints(string)->str|None:
+    if string in frontend_endpoints:
+        return string
+    if string.split("/")[1]=="product":
+        return "GET /product{id}"
+    return None
+    
+call_count_dict={service: {} for service in services}
+
 with open("../data/f_traces_filtered.json", "r") as f, open(
     "service_cluster_ip.json", "r"
 ) as service_cluster_ip_f, open("pod_ip.json", "r") as pod_ip_f:
-    traces = json.load(f)
+    traces_data_list = json.load(f)
     service_cluster_ip_mapping = json.load(service_cluster_ip_f)
     pod_ip_mapping = json.load(pod_ip_f)
     service_index_map = {
@@ -22,16 +52,18 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
     n_interactions = [[0 for _ in range(10)] for _ in range(10)]
     n_unknown_callers = [0 for _ in range(10)]
     n_unknown_callees = [0 for _ in range(10)]
-    for trace in traces:
-        for resourceSpan in trace["resourceSpans"]:
+    for trace_data in traces_data_list:
+        for resourceSpan in trace_data["resourceSpans"]:
             resource_name = ""
             for attribute in resourceSpan["resource"]["attributes"]:
-                if attribute["key"] == "service.name":
-                    resource_name = attribute["value"]["stringValue"]
+                if attribute["key"] == "service.name" or attribute["key"]=="host.name":
+                    for service in services:
+                        if service in attribute["value"]["stringValue"].lower():
+                            resource_name = service
                     break
             if resource_name == "":
                 raise Exception(
-                    "service.name attribute not found in resource attributes\n"
+                    "service.name and host.name attributes not found in resource attributes\n"
                     + str(resourceSpan["resource"]["attributes"])
                 )
 
@@ -40,6 +72,9 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
                     span_kind = span["kind"]
                     unknown_client = True
                     unknown_server = True
+                    backend_endpoint=None
+                    url=None
+                    method=None
                     for attribute in span["attributes"]:
                         if span_kind == 2:
                             if (
@@ -72,6 +107,12 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
                                     break
 
                         elif span_kind == 3:
+                            if (attribute["key"] == "rpc.method" or attribute["key"] == "grpc.method") and not backend_endpoint: 
+                                backend_endpoint=map_to_backend_endpoints(attribute["value"]["stringValue"])
+                            if attribute["key"] == "url.path":
+                                url=attribute["value"]["stringValue"]
+                            if attribute["key"] == "http.request.method":
+                                method=attribute["value"]["stringValue"]
                             if attribute["key"] == "server.address":
                                 server_address = attribute["value"]["stringValue"]
                                 if server_address in service_cluster_ip_mapping:
@@ -102,6 +143,21 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
                                         ][service_index_map[service]] += 1
                                         unknown_server = False
                                         break
+                    if span_kind==3:
+                        if backend_endpoint:
+                            if backend_endpoint in call_count_dict[resource_name]:
+                                call_count_dict[resource_name][backend_endpoint]+=1
+                            else:
+                                call_count_dict[resource_name][backend_endpoint]=1
+                        elif url and method:
+                            frontend_endpoint=map_to_frontend_endpoints(method+" "+url)
+                            if frontend_endpoint in call_count_dict[resource_name]:
+                                call_count_dict[resource_name][frontend_endpoint]+=1
+                            else:
+                                call_count_dict[resource_name][frontend_endpoint]=1
+                        else:
+                            raise Exception("Span lack both backend endpoint and frontend endpoit: "+str(span))
+
 
                     if unknown_client and span_kind == 2:
                         n_unknown_callers[service_index_map[resource_name]] += 1
@@ -122,9 +178,8 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
         print(i, end="\t")
         for j in range(len(n_interactions[i])):
             print(n_interactions[i][j], end="\t")
-        print()
 
-    print("Routing probability matrix.")
+    print("interactions probability matrix.")
     call_n_row = []
     for i in range(len(n_interactions)):
         n = 0
@@ -132,7 +187,7 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
             n += n_interactions[i][j]
         call_n_row.append(n)
 
-    with open(f"../data/routing_info_{datetime.now().isoformat()}.json", "w") as f:
+    with open(f"../data/interaction_info_{datetime.now().isoformat()}.json", "w") as f:
         json.dump({"tot caller": call_n_row, "call matrix": n_interactions}, f, indent=4)
 
     for i in range(len(n_interactions)):
@@ -158,3 +213,7 @@ with open("../data/f_traces_filtered.json", "r") as f, open(
     for i in range(len(n_unknown_callees)):
         print(f"{n_unknown_callees[i]}", end="\t")
     print()
+
+    with open(f"../data/calls_info_{datetime.now().isoformat()}.json","w") as f:
+        json.dump(call_count_dict, f, indent=4)
+    

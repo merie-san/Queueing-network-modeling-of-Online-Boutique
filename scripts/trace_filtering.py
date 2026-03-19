@@ -7,21 +7,21 @@ def check_healthz_url_path(span):
     return False
 
 
-def is_health_span(span):
-    return "health" in span["name"].lower() or check_healthz_url_path(span)
+def is_health_or_export_span(span):
+    return "health" in span["name"].lower() or check_healthz_url_path(span) or "export" in span["name"].lower()
 
 
 if __name__ == "__main__":
     with open("../data/f_traces.json") as f, open("../data/f_traces_filtered.json", "w") as f_out:
-        traces = json.load(f)
+        traces_data_list = json.load(f)
 
-        for trace in traces:
-            for resourceSpan in trace.get("resourceSpans", []):
+        for traces_data in traces_data_list:
+            for resourceSpan in traces_data.get("resourceSpans", []):
                 for scopeSpan in resourceSpan.get("scopeSpans", []):
                     # keep only non-health spans
                     scopeSpan["spans"] = [
                         span for span in scopeSpan.get("spans", [])
-                        if not is_health_span(span)
+                        if not is_health_or_export_span(span)
                     ]
 
-        json.dump(traces, f_out, indent=4)
+        json.dump(traces_data_list, f_out, indent=4)

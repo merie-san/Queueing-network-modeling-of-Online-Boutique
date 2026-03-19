@@ -1,5 +1,6 @@
 import json
 import sys
+import os
 
 def get_datapoints(metric):
     if "sum" in metric:
@@ -9,6 +10,7 @@ def get_datapoints(metric):
     else:
         raise Exception(f"sum and histogram keys are absent in metric {metric}")
 
+WK_DIR=os.getenv("WKDIR")
 
 if __name__ == "__main__":
     services = [
@@ -24,7 +26,7 @@ if __name__ == "__main__":
         "productcatalogservice",
     ]
     service_metrics = {service: [] for service in services}
-    with open("../data/f_metrics.json", "r") as f:
+    with open(f"{WK_DIR}/f_metrics.json", "r") as f:
         json_metrics = json.load(f)
         for json_metric in json_metrics:
             for resourceMetric in json_metric["resourceMetrics"]:
@@ -116,4 +118,4 @@ if __name__ == "__main__":
                                             print(f"Encountered a keyError: {datapoint}")
                                             sys.exit()
 
-        json.dump(service_metrics, open("../data/f_processed_metrics.json", "w"), indent=4)
+        json.dump(service_metrics, open(f"{WK_DIR}/f_processed_metrics.json", "w"), indent=4)
