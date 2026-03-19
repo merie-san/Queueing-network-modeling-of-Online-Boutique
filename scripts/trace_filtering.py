@@ -1,4 +1,8 @@
 import json
+import os
+
+WK_DIR = os.getenv("WKDIR")
+
 
 def check_healthz_url_path(span):
     for attribute in span.get("attributes", []):
@@ -8,11 +12,17 @@ def check_healthz_url_path(span):
 
 
 def is_health_or_export_span(span):
-    return "health" in span["name"].lower() or check_healthz_url_path(span) or "export" in span["name"].lower()
+    return (
+        "health" in span["name"].lower()
+        or check_healthz_url_path(span)
+        or "export" in span["name"].lower()
+    )
 
 
 if __name__ == "__main__":
-    with open("../data/f_traces.json") as f, open("../data/f_traces_filtered.json", "w") as f_out:
+    with open(f"{WK_DIR}/f_traces.json") as f, open(
+        f"{WK_DIR}/f_traces_filtered.json", "w"
+    ) as f_out:
         traces_data_list = json.load(f)
 
         for traces_data in traces_data_list:
@@ -20,7 +30,8 @@ if __name__ == "__main__":
                 for scopeSpan in resourceSpan.get("scopeSpans", []):
                     # keep only non-health spans
                     scopeSpan["spans"] = [
-                        span for span in scopeSpan.get("spans", [])
+                        span
+                        for span in scopeSpan.get("spans", [])
                         if not is_health_or_export_span(span)
                     ]
 

@@ -33,7 +33,7 @@ def convert_to_json_traces():
         with open(f"{WK_DIR}/{traces_path}", "r") as traces_file:
             for line in traces_file:
                 traces.append(json.loads(line))
-    json.dump(traces, open("{WK_DIR}/f_traces.json", "w"), indent=4)
+    json.dump(traces, open(f"{WK_DIR}/f_traces.json", "w"), indent=4)
 
 
 if __name__ == "__main__":

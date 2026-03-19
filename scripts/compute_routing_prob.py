@@ -1,5 +1,7 @@
 import json
+import os
 
+WK_DIR = os.getenv("WKDIR")
 
 class Span:
 
@@ -56,7 +58,7 @@ def function_to_service(function_name) -> str:
 
 if __name__ == "__main__":
 
-    with open("../data/f_traces_filtered.json") as f:
+    with open(f"{WK_DIR}/f_traces_filtered.json") as f:
         trace_data_list = json.load(f)
     traces = {}
     for trace_data in trace_data_list:
@@ -84,8 +86,13 @@ if __name__ == "__main__":
     for trace_id, spans in traces.items():
         alert = False
         root_service_name = function_to_service(spans[0].name)
-        end_service_name =function_to_service(spans[-1].name)
-        if end_service_name not in ["frontend", "currencyservice", "adservice", "cartservice"]:
+        end_service_name = function_to_service(spans[-1].name)
+        if end_service_name not in [
+            "frontend",
+            "currencyservice",
+            "adservice",
+            "cartservice",
+        ]:
             emptied.append(trace_id)
             continue
         while root_service_name != "frontend":
@@ -119,17 +126,17 @@ if __name__ == "__main__":
                 + str(spans)
             )
         for i in range(len(spans)):
-            if i==0:
+            if i == 0:
                 if "in" not in routing_dict[spans[i].name]:
-                    routing_dict[spans[i].name]["in"]=1
+                    routing_dict[spans[i].name]["in"] = 1
                 else:
-                    routing_dict[spans[i].name]["in"]+=1
-            last_service=function_to_service(spans[i].name)
-            if i==len(spans)-1:
+                    routing_dict[spans[i].name]["in"] += 1
+            last_service = function_to_service(spans[i].name)
+            if i == len(spans) - 1:
                 if "out" not in routing_dict[last_service]:
-                    routing_dict[last_service]["out"]=1
+                    routing_dict[last_service]["out"] = 1
                 else:
-                    routing_dict[last_service]["out"]+=1
+                    routing_dict[last_service]["out"] += 1
             if spans[i].kind == 2:
                 continue
             routing_service = function_to_service(spans[i - 1].name)
@@ -138,5 +145,5 @@ if __name__ == "__main__":
             else:
                 routing_dict[routing_service][spans[i].name] += 1
 
-    with open("../data/f_routing.json", "w") as f:
+    with open(f"{WK_DIR}/f_routing.json", "w") as f:
         json.dump(routing_dict, f, indent=4)
