@@ -1,0 +1,52 @@
+{
+    "frontend": {
+        "requests_rate": 11.409104094918646,
+        "requests_duration": 0.037833627839193654,
+        "active_requests": 0.017807616595117887
+    },
+    "adservice": {
+        "requests_rate": 6.420271368821532,
+        "requests_duration": 0.00017635606511275277,
+        "active_requests": 4.203907830274662e-45
+    },
+    "recommendationservice": {
+        "requests_rate": 7.135381278827655,
+        "requests_duration": 0.005152111049757085,
+        "active_requests": 5.734291279947349e-06
+    },
+    "cartservice": {
+        "requests_rate": 10.663037216679964,
+        "requests_duration": 0.0009173713474526827,
+        "active_requests": 2.557906589118888e-57
+    },
+    "checkoutservice": {
+        "requests_rate": 0.3546247207915764,
+        "requests_duration": 0.024423383585868493,
+        "active_requests": 4.621967234511525e-33
+    },
+    "paymentservice": {
+        "requests_rate": 0.3534608083915769,
+        "requests_duration": 0.0002908912830558278,
+        "active_requests": 0.0
+    },
+    "shippingservice": {
+        "requests_rate": 2.8497575913378994,
+        "requests_duration": 0.00012674581612274753,
+        "active_requests": 0.0
+    },
+    "emailservice": {
+        "requests_rate": 0.3530665491005801,
+        "requests_duration": 0.0003632991771979872,
+        "active_requests": 0.0
+    },
+    "currencyservice": {
+        "requests_rate": 34.9148335884104,
+        "requests_duration": 0.00019397176498620018,
+        "active_requests": 0.0
+    },
+    "productcatalogservice": {
+        "requests_rate": 53.091940557764325,
+        "requests_duration": 8.817997543502562e-05,
+        "active_requests": 0.0
+    }
+}

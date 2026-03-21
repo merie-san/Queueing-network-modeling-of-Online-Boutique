@@ -149,24 +149,16 @@ with open(f"{WK_DIR}/f_traces_filtered.json", "r") as f:
                                 + str(span)
                             )
 
-    service_call_ratio_dict = {
+    service_call_count_dict = {
         service: {service: 0.0 for service in services} for service in services
     }
     for service, call_dict in endpoint_call_count_dict.items():
-        row_count = 0
         for function_name, count in call_dict.items():
-            service_call_ratio_dict[service][function_map[function_name]] += count
-            row_count += count
+            service_call_count_dict[service][function_map[function_name]] += count
         for service_name in services:
-            if row_count != 0:
-                service_call_ratio_dict[service][service_name] = (
-                    service_call_ratio_dict[service][service_name] / float(row_count)
-                )
-            else:
-                service_call_ratio_dict[service][service_name] = math.nan
-
-    with open(f"{WK_DIR}/calls_ratio_{datetime.now().isoformat()}.json", "w") as f:
-        json.dump(service_call_ratio_dict, f, indent=4)
+            service_call_count_dict[service][service_name] = service_call_count_dict[
+                service
+            ][service_name]
 
     with open(f"{WK_DIR}/calls_count_{datetime.now().isoformat()}.json", "w") as f:
-        json.dump(endpoint_call_count_dict, f, indent=4)
+        json.dump(service_call_count_dict, f, indent=4)

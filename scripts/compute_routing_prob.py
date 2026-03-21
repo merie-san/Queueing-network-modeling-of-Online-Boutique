@@ -1,7 +1,9 @@
+from datetime import datetime
 import json
 import os
 
 WK_DIR = os.getenv("WKDIR")
+
 
 class Span:
 
@@ -117,6 +119,7 @@ if __name__ == "__main__":
     for trace_id in emptied:
         traces.pop(trace_id)
 
+    # Compute routing counts
     for trace_id, spans in traces.items():
         if spans[0].kind != 2:
             raise Exception(
@@ -145,5 +148,80 @@ if __name__ == "__main__":
             else:
                 routing_dict[routing_service][spans[i].name] += 1
 
-    with open(f"{WK_DIR}/f_routing.json", "w") as f:
+    with open(f"{WK_DIR}/routing_count_{datetime.now().isoformat()}.json", "w") as f:
         json.dump(routing_dict, f, indent=4)
+
+    # Compute Response time (approximates service time at low loads) for upstream services
+
+    avg_response_time_dict_list = {
+        "checkoutservice": [],
+        "recommendationservice": [],
+        "frontend": [],
+    }
+
+    for trace_id, spans in traces.items():
+
+        if spans[0].kind != 2 or function_to_service(spans[0].name) != "frontend":
+            raise Exception(
+                "Root span of the trace is not of kind 2 or is not produced by the front end: "
+                + str(spans[0])
+                + "\n"
+                + str(spans)
+            )
+        if len(spans) > 1:
+            # computing response time for the frontend
+            avg_response_time_dict_list["frontend"].append(
+                spans[1].start_time - spans[0].start_time
+            )
+        else:
+            avg_response_time_dict_list["frontend"].append(
+                spans[0].end_time - spans[0].start_time
+            )
+
+        for i in range(len(spans)):
+            # computing response time for the checkout service
+            if (
+                function_to_service(spans[i].name) == "checkoutservice"
+                and spans[i].kind == 2
+            ):
+                if len(spans) > i + 1:
+                    avg_response_time_dict_list["checkoutservice"].append(
+                        spans[i + 1].start_time - spans[i].start_time
+                    )
+                else:
+                    avg_response_time_dict_list["checkoutservice"].append(
+                        spans[i].end_time - spans[i].start_time
+                    )
+
+            # computing response time for the checkout service
+            if (
+                function_to_service(spans[i].name) == "recommendationservice"
+                and spans[i].kind == 2
+            ):
+                if len(spans) > i + 1:
+                    avg_response_time_dict_list["recommendationservice"].append(
+                        spans[i + 1].start_time - spans[i].start_time
+                    )
+                else:
+                    avg_response_time_dict_list["recommendationservice"].append(
+                        spans[i].end_time - spans[i].start_time
+                    )
+
+    avg_response_time_dict = {
+        "checkoutservice": 0.0,
+        "recommendationservice": 0.0,
+        "frontend": 0.0,
+    }
+
+
+    for service_name, response_time_list in avg_response_time_dict_list.items():
+        for response_time in response_time_list:
+            avg_response_time_dict[service_name] += response_time
+        avg_response_time_dict[service_name] = avg_response_time_dict[
+            service_name
+        ] / len(response_time_list)
+
+    with open(
+        f"{WK_DIR}/upstream_response_time_{datetime.now().isoformat()}.json", "w"
+    ) as f:
+        json.dump(avg_response_time_dict, f, indent=4)

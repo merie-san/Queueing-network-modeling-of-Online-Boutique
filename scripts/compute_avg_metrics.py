@@ -80,18 +80,11 @@ class RequestsCountResourceCumulator:
 
     def __init__(self, metric) -> None:
         self.resource_name = metric["resource_name"]
-        self.start_time = float(metric["time"])
-        self.updated_time = float(metric["time"])
         self.cumulators = {metric["function_name"]: RequestsCountCumulator(metric)}
 
     def update(self, metric):
         if metric["resource_name"] != self.resource_name:
             raise Exception("Metric with wrong resource")
-        update_time = float(metric["time"])
-        if update_time > self.updated_time:
-            self.updated_time = update_time
-        if update_time < self.start_time:
-            self.start_time = update_time
         function_name = metric["function_name"]
         if function_name not in self.cumulators:
             self.cumulators[function_name] = RequestsCountCumulator(metric)
@@ -99,20 +92,25 @@ class RequestsCountResourceCumulator:
             self.cumulators[function_name].update(metric)
 
     def get_interval(self) -> float:
-        return self.updated_time - self.start_time
+        interval=0
+        for _, cumulator in self.cumulators.items():
+            interval+=cumulator.get_interval_length()
+        return interval/len(self.cumulators)
 
     def get_metric(self) -> float:
-        if self.start_time == self.updated_time:
-            return math.nan
-        count = 0
+        rate = 0
         for _, cumulator in self.cumulators.items():
-            count += cumulator.get_count()
-        return count / (self.updated_time - self.start_time)
+            rate += cumulator.get_metric()
+        return rate
+
+    def reset(self):
+        for _, cumulator in self.cumulators.items():
+            cumulator.reset()
 
     def __repr__(self) -> str:
-        output=f"RequestsCountResourceCumulator<\tresource:{self.resource_name}\tcumulators:\n"
+        output = f"RequestsCountResourceCumulator<\tresource:{self.resource_name}\tcumulators:\n"
         for function_name, cumulator in self.cumulators.items():
-            output+=f"endpoint name - {function_name}\t cumulator - {cumulator}\n"
+            output += f"endpoint name - {function_name}\t cumulator - {cumulator}\n"
         return f"{output}>"
 
 
@@ -205,18 +203,11 @@ class RequestsDurationResourceCumulator:
 
     def __init__(self, metric) -> None:
         self.resource_name = metric["resource_name"]
-        self.start_time = float(metric["time"])
-        self.updated_time = float(metric["time"])
         self.cumulators = {metric["function_name"]: RequestsDurationCumulator(metric)}
 
     def update(self, metric):
         if metric["resource_name"] != self.resource_name:
             raise Exception("Metric with wrong resource")
-        update_time = float(metric["time"])
-        if update_time > self.updated_time:
-            self.updated_time = update_time
-        if update_time < self.start_time:
-            self.start_time = update_time
         function_name = metric["function_name"]
         if function_name not in self.cumulators:
             self.cumulators[function_name] = RequestsDurationCumulator(metric)
@@ -224,7 +215,10 @@ class RequestsDurationResourceCumulator:
             self.cumulators[function_name].update(metric)
 
     def get_interval(self) -> float:
-        return self.updated_time - self.start_time
+        interval=0
+        for _, cumulator in self.cumulators.items():
+            interval+=cumulator.get_interval_length()
+        return interval/len(self.cumulators)
 
     def get_metric(self) -> float:
         count = 0
@@ -236,10 +230,14 @@ class RequestsDurationResourceCumulator:
             return math.nan
         return sum / count
 
+    def reset(self):
+        for _, cumulator in self.cumulators.items():
+            cumulator.reset()
+
     def __repr__(self) -> str:
-        output=f"RequestsDurationResourceCumulator<\tresource:{self.resource_name}\tcumulators:\n"
+        output = f"RequestsDurationResourceCumulator<\tresource:{self.resource_name}\tcumulators:\n"
         for function_name, cumulator in self.cumulators.items():
-            output+=f"endpoint name - {function_name}\t cumulator - {cumulator}\n"
+            output += f"endpoint name - {function_name}\t cumulator - {cumulator}\n"
         return f"{output}>"
 
 
@@ -323,18 +321,11 @@ class ActiveRequestsResourceCumulator:
 
     def __init__(self, metric) -> None:
         self.resource_name = metric["resource_name"]
-        self.start_time = float(metric["time"])
-        self.updated_time = float(metric["time"])
         self.cumulators = {metric["function_name"]: ActiveRequestsCumulator(metric)}
 
     def update(self, metric):
         if metric["resource_name"] != self.resource_name:
             raise Exception("Metric with wrong resource")
-        update_time = float(metric["time"])
-        if update_time > self.updated_time:
-            self.updated_time = update_time
-        if update_time < self.start_time:
-            self.start_time = update_time
         function_name = metric["function_name"]
         if function_name not in self.cumulators:
             self.cumulators[function_name] = ActiveRequestsCumulator(metric)
@@ -342,7 +333,10 @@ class ActiveRequestsResourceCumulator:
             self.cumulators[function_name].update(metric)
 
     def get_interval(self) -> float:
-        return self.updated_time - self.start_time
+        interval=0
+        for _, cumulator in self.cumulators.items():
+            interval+=cumulator.get_interval_length()
+        return interval/len(self.cumulators)
 
     def get_metric(self) -> float:
         sum = 0
@@ -355,10 +349,14 @@ class ActiveRequestsResourceCumulator:
             return math.nan
         return sum / interval
 
+    def reset(self):
+        for _, cumulator in self.cumulators.items():
+            cumulator.reset()
+
     def __repr__(self) -> str:
-        output=f"ActiveRequestsResourceCumulator<\tresource:{self.resource_name}\tcumulators:\n"
+        output = f"ActiveRequestsResourceCumulator<\tresource:{self.resource_name}\tcumulators:\n"
         for function_name, cumulator in self.cumulators.items():
-            output+=f"endpoint name - {function_name}\t cumulator - {cumulator}\n"
+            output += f"endpoint name - {function_name}\t cumulator - {cumulator}\n"
         return f"{output}>"
 
 
@@ -370,11 +368,21 @@ if __name__ == "__main__":
         "-a", "--all", action="store_true", help="option to calculate the overall mean"
     )
     group.add_argument(
-        "-i", "--interval", type=int, help="interval length for mean calculations"
+        "-i",
+        "--interval",
+        type=int,
+        help="interval length for mean calculations on entire services",
+    )
+    group.add_argument(
+        "-e",
+        "--endpoint",
+        type=int,
+        help="interval length for mean calculations on single endpoints",
     )
     args = parser.parse_args()
-    MEAN_INTERVAL = args.interval
+    MEAN_INTERVAL_SERVICE = args.interval
     OVERALL_MEAN = args.all
+    MEAN_INTERVAL_ENDPOINT = args.endpoint
     WK_DIR = os.getenv("WKDIR")
 
     raw_metrics = json.load(open(f"{WK_DIR}/f_processed_metrics.json", "r"))
@@ -391,7 +399,7 @@ if __name__ == "__main__":
         "currencyservice",
         "productcatalogservice",
     ]
-    if not OVERALL_MEAN:
+    if not OVERALL_MEAN and MEAN_INTERVAL_ENDPOINT:
 
         metrics_dict = {}
         for service in services:
@@ -446,7 +454,7 @@ if __name__ == "__main__":
                         cumulator = endpoint_cumulator[function_name][metric_type]
                         cumulator.update(service_metric)
                         interval = cumulator.get_interval_length()
-                        if interval > MEAN_INTERVAL:
+                        if interval > MEAN_INTERVAL_ENDPOINT:
                             metrics_dict[service][function_name][metric_type].append(
                                 (cumulator.get_metric(), interval)
                             )
@@ -467,10 +475,13 @@ if __name__ == "__main__":
 
         json.dump(
             metrics_dict,
-            open(f"{WK_DIR}/f_average_metrics_{datetime.now().isoformat()}.json", "w"),
+            open(
+                f"{WK_DIR}/endpoint_average_metrics_{datetime.now().isoformat()}.json",
+                "w",
+            ),
             indent=4,
         )
-    else:
+    elif not MEAN_INTERVAL_SERVICE and OVERALL_MEAN:
         service_cumulator = {}
         for service in services:
             service_cumulator[service] = {
@@ -498,17 +509,87 @@ if __name__ == "__main__":
                 else:
                     service_cumulator[service][metric_type].update(service_metric)
 
-        metric_dict = {}
+        metric_dict = {service: {} for service in services}
 
         for service, service_cumulators in service_cumulator.items():
             for metric, cumulator in service_cumulators.items():
                 if not cumulator:
-                    raise Exception(f"No cumulator present for service: {service} - metric: {metric}")
+                    raise Exception(
+                        f"No cumulator present for service: {service} - metric: {metric}"
+                    )
                 value = cumulator.get_metric()
                 interval = cumulator.get_interval()
-                metric_dict[f"average_{service}_{metric}_second"] = value
+                if metric=="requests_total":
+                    metric="requests_rate"
+                metric_dict[service][metric] = value
                 print(f"{service} {metric} mean: {value} - {interval} s")
 
         json.dump(
-            metric_dict, open(f"{WK_DIR}/overall_avg_metrics_{datetime.now().isoformat()}.json", "w"), indent=4
+            metric_dict,
+            open(
+                f"{WK_DIR}/overall_avg_metrics_{datetime.now().isoformat()}.json", "w"
+            ),
+            indent=4,
+        )
+
+    elif MEAN_INTERVAL_SERVICE and not OVERALL_MEAN:
+
+        metrics_dict = {}
+        service_cumulator = {}
+        for service in services:
+            metrics_dict[service] = {}
+            service_cumulator[service] = {
+                "requests_rate": None,
+                "requests_duration": None,
+                "active_requests": None,
+            }
+            for service_metric in raw_metrics[service]:
+                metric_type = "_".join(service_metric["metric_name"].split("_")[1:])
+                if metric_type=="requests_total":
+                    metric_type="requests_rate"
+                if not service_cumulator[service][metric_type]:
+                    if metric_type == "requests_rate":
+                        service_cumulator[service][metric_type] = (
+                            RequestsCountResourceCumulator(service_metric)
+                        )
+                        metrics_dict[service][metric_type] = []
+                    elif metric_type == "requests_duration":
+                        service_cumulator[service][metric_type] = (
+                            RequestsDurationResourceCumulator(service_metric)
+                        )
+                        metrics_dict[service][metric_type] = []
+                    elif metric_type == "active_requests":
+                        service_cumulator[service][metric_type] = (
+                            ActiveRequestsResourceCumulator(service_metric)
+                        )
+                        metrics_dict[service][metric_type] = []
+                    else:
+                        raise Exception("Unexpected metric type")
+                else:
+                    cumulator = service_cumulator[service][metric_type]
+                    cumulator.update(service_metric)
+                    interval = cumulator.get_interval()
+                    if interval > MEAN_INTERVAL_SERVICE:
+                        metrics_dict[service][metric_type].append(
+                            (cumulator.get_metric(), interval)
+                        )
+                        cumulator.reset()
+
+        for svc_name, svc_dict in metrics_dict.items():
+            for metric_name, metric_list in svc_dict.items():
+                print(f"{svc_name}-{metric_name}")
+                i = 0
+                for tuple_v in metric_list:
+                    print(
+                        f"interval {i} of {tuple_v[1]} seconds - average {tuple_v[0]} in seconds"
+                    )
+                    i += 1
+
+        json.dump(
+            metrics_dict,
+            open(
+                f"{WK_DIR}/service_average_metrics_{datetime.now().isoformat()}.json",
+                "w",
+            ),
+            indent=4,
         )
