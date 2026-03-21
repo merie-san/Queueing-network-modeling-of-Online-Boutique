@@ -1,0 +1,56 @@
+{
+    "frontend": {
+        "in": 46922,
+        "GetSupportedCurrencies": 16064,
+        "GetProduct": 23573,
+        "PlaceOrder": 1448,
+        "out": 4356,
+        "EmptyCart": 1481
+    },
+    "adservice": {
+        "out": 26510
+    },
+    "recommendationservice": {
+        "ListProducts": 29330
+    },
+    "cartservice": {
+        "ListRecommendations": 8724,
+        "Convert": 26510,
+        "out": 5884,
+        "GetProduct": 1448,
+        "SendOrderConfirmation": 1448
+    },
+    "checkoutservice": {
+        "GetCart": 1448
+    },
+    "paymentservice": {
+        "ShipOrder": 1448
+    },
+    "shippingservice": {
+        "Convert": 10172,
+        "EmptyCart": 1448
+    },
+    "emailservice": {
+        "ListRecommendations": 1448
+    },
+    "currencyservice": {
+        "GetCart": 27895,
+        "GetProduct": 10144,
+        "out": 10172,
+        "ListRecommendations": 19171,
+        "ListProducts": 7340,
+        "Convert": 58712,
+        "GetAds": 7339,
+        "GetQuote": 1448,
+        "Charge": 1448
+    },
+    "productcatalogservice": {
+        "GetProduct": 146614,
+        "GetQuote": 8724,
+        "Convert": 11592,
+        "GetSupportedCurrencies": 20619,
+        "GetAds": 19171,
+        "GetCart": 7340,
+        "AddItem": 4402
+    }
+}

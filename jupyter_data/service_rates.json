@@ -1,0 +1,12 @@
+{
+    "frontend": 1081.9230000716905,
+    "adservice": 2864.3147896879223,
+    "recommendationservice": 3429.7237736846037,
+    "cartservice": 631.6855044437549,
+    "checkoutservice": 3543.131423910748,
+    "paymentservice": 3052.6315789473674,
+    "shippingservice": 11936.212286589074,
+    "emailservice": 3334.1506242890227,
+    "currencyservice": 4596.678529062873,
+    "productcatalogservice": 15338.68430627322
+}
