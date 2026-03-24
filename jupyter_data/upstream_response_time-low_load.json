@@ -1,5 +1,12 @@
 {
-    "checkoutservice": 0.00028223621434178846,
-    "recommendationservice": 0.0002915686702447425,
-    "frontend": 0.0009242801936309126
+    "frontend": 0.0009242801936309126,
+    "adservice": 0.0021429506474786547,
+    "recommendationservice": 0.0022281825066014,
+    "cartservice": 0.0028350092491539287,
+    "checkoutservice": 0.0006468049411115976,
+    "paymentservice": 0.0027845337473112962,
+    "shippingservice": 0.0013171283222285725,
+    "emailservice": 0.004383397513422473,
+    "currencyservice": 0.005769464664001491,
+    "productcatalogservice": 0.001587143186270379
 }

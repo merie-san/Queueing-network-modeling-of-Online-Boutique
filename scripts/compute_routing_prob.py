@@ -58,6 +58,27 @@ def function_to_service(function_name) -> str:
     return function_map[function_name]
 
 
+def update_response_time_dict(spans, i, avg_response_time_dict_list):
+    if len(spans) > i + 1:
+        if spans[i + 1].name != spans[i].name or spans[i + 1].kind != 2:
+            avg_response_time_dict_list[function_to_service(spans[i].name)].append(
+                spans[i + 1].start_time - spans[i].start_time
+            )
+        elif spans[i + 1].name == spans[i].name and spans[i + 1].kind == 2:
+            if len(spans) > i + 2:
+                avg_response_time_dict_list[function_to_service(spans[i].name)].append(
+                    spans[i + 2].start_time - spans[i].start_time
+                )
+            else:
+                avg_response_time_dict_list[function_to_service(spans[i].name)].append(
+                    spans[i + 1].end_time - spans[i].start_time
+                )
+    else:
+        avg_response_time_dict_list[function_to_service(spans[i].name)].append(
+            spans[i].end_time - spans[i].start_time
+        )
+
+
 if __name__ == "__main__":
 
     with open(f"{WK_DIR}/f_traces_filtered.json") as f:
@@ -153,11 +174,7 @@ if __name__ == "__main__":
 
     # Compute Response time (approximates service time at low loads) for upstream services
 
-    avg_response_time_dict_list = {
-        "checkoutservice": [],
-        "recommendationservice": [],
-        "frontend": [],
-    }
+    avg_response_time_dict_list = {service: [] for service in services}
 
     for trace_id, spans in traces.items():
 
@@ -182,37 +199,21 @@ if __name__ == "__main__":
             # computing response time for the checkout service
             if (
                 function_to_service(spans[i].name) == "checkoutservice"
-                and spans[i].kind == 2
+                and spans[i].kind == 3
             ):
-                if len(spans) > i + 1:
-                    avg_response_time_dict_list["checkoutservice"].append(
-                        spans[i + 1].start_time - spans[i].start_time
-                    )
-                else:
-                    avg_response_time_dict_list["checkoutservice"].append(
-                        spans[i].end_time - spans[i].start_time
-                    )
+                update_response_time_dict(spans, i, avg_response_time_dict_list)
 
             # computing response time for the checkout service
-            if (
+            elif (
                 function_to_service(spans[i].name) == "recommendationservice"
-                and spans[i].kind == 2
+                and spans[i].kind == 3
             ):
-                if len(spans) > i + 1:
-                    avg_response_time_dict_list["recommendationservice"].append(
-                        spans[i + 1].start_time - spans[i].start_time
-                    )
-                else:
-                    avg_response_time_dict_list["recommendationservice"].append(
-                        spans[i].end_time - spans[i].start_time
-                    )
+                update_response_time_dict(spans, i, avg_response_time_dict_list)
+            # computing response time for other services
+            elif i != 0 and spans[i].kind == 3:
+                update_response_time_dict(spans, i, avg_response_time_dict_list)
 
-    avg_response_time_dict = {
-        "checkoutservice": 0.0,
-        "recommendationservice": 0.0,
-        "frontend": 0.0,
-    }
-
+    avg_response_time_dict = {service: 0.0 for service in services}
 
     for service_name, response_time_list in avg_response_time_dict_list.items():
         for response_time in response_time_list:

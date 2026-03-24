@@ -1,0 +1,122 @@
+{
+    "frontend": {
+        "frontend": 0.0,
+        "adservice": 5337.0,
+        "recommendationservice": 5885.0,
+        "cartservice": 8247.0,
+        "checkoutservice": 297.0,
+        "paymentservice": 0.0,
+        "shippingservice": 1757.0,
+        "emailservice": 0.0,
+        "currencyservice": 28478.0,
+        "productcatalogservice": 37549.0
+    },
+    "adservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    },
+    "recommendationservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 5881.0
+    },
+    "cartservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    },
+    "checkoutservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 593.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 297.0,
+        "shippingservice": 593.0,
+        "emailservice": 296.0,
+        "currencyservice": 765.0,
+        "productcatalogservice": 468.0
+    },
+    "paymentservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    },
+    "shippingservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    },
+    "emailservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    },
+    "currencyservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    },
+    "productcatalogservice": {
+        "frontend": 0.0,
+        "adservice": 0.0,
+        "recommendationservice": 0.0,
+        "cartservice": 0.0,
+        "checkoutservice": 0.0,
+        "paymentservice": 0.0,
+        "shippingservice": 0.0,
+        "emailservice": 0.0,
+        "currencyservice": 0.0,
+        "productcatalogservice": 0.0
+    }
+}
