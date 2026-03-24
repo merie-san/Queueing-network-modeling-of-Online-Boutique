@@ -181,8 +181,8 @@ class RequestsDurationCumulator:
             return math.nan
         return (self.sum_2 - self.sum_1) / (self.count_2 - self.count_1)
 
-    def get_count(self) -> int:
-        return self.count_2
+    def get_count_interval(self) -> int:
+        return self.count_2- self.count_1
 
     def get_sum(self) -> float:
         return self.sum_2
@@ -221,14 +221,14 @@ class RequestsDurationResourceCumulator:
         return interval/len(self.cumulators)
 
     def get_metric(self) -> float:
-        count = 0
-        sum = 0
+        tot_count = 0
+        tot_sum = 0
         for _, cumulator in self.cumulators.items():
-            count += cumulator.get_count()
-            sum += cumulator.get_sum()
-        if count == 0:
+            tot_count += cumulator.get_count_interval()
+            tot_sum += cumulator.get_metric()*cumulator.get_count_interval()
+        if tot_count == 0:
             return math.nan
-        return sum / count
+        return tot_sum / tot_count
 
     def reset(self):
         for _, cumulator in self.cumulators.items():
@@ -339,15 +339,10 @@ class ActiveRequestsResourceCumulator:
         return interval/len(self.cumulators)
 
     def get_metric(self) -> float:
-        sum = 0
-        interval = 0
+        tot_sum = 0
         for _, cumulator in self.cumulators.items():
-            sub_interval = cumulator.get_interval_length()
-            sum += cumulator.get_metric() * sub_interval
-            interval += sub_interval
-        if interval == 0:
-            return math.nan
-        return sum / interval
+            tot_sum += cumulator.get_metric() 
+        return tot_sum 
 
     def reset(self):
         for _, cumulator in self.cumulators.items():
